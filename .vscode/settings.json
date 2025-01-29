@@ -1,0 +1,10 @@
+{
+    "objectscript.conn": {
+        "server": "iris-localhost-8082",
+        "ns": "FHIRFACADE",
+        "active": false
+    },
+    "objectscript.export": {
+        "folder":"src-iris/src"
+    }
+}
