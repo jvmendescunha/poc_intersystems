@@ -22,7 +22,7 @@ Method OnGetPatientSearchData(pRequest As MarisaCare.Interop.Model.PatientSearch
             Set tFilter = {
                 "$expr": {
                     "$eq": [
-                        { "$arrayElemAt": [{ "$split": ["$userResponse.name", " "] }, -1] },
+                        { "$arrayElemAt": [{ "$split": ["$userResponse.nome", " "] }, -1] },
                         (pRequest.LastName)
                     ]
                 }  
@@ -35,9 +35,9 @@ Method OnGetPatientSearchData(pRequest As MarisaCare.Interop.Model.PatientSearch
             Set tSDAPatient = ##class(HS.SDA3.Patient).%New()
             Set tUserResponse = ..g(value,"userResponse")
             Set tPatientCpf = ..g(tUserResponse,"cpf")
-            Set tSDAPatient.Name = ..SplitName(..g(tUserResponse,"name"),.tSC)
+            Set tSDAPatient.Name = ..SplitName(..g(tUserResponse,"nome"),.tSC)
             $$$ThrowOnError(tSC)
-            Set tSDAPatient.Gender = ..CodeTable("Gender", $ZSTRIP(..g(tUserResponse,"sexoBiologico"), "*C"), $ZSTRIP(..g(tUserResponse,"sexoBiologico"), "*C"))
+            Set tSDAPatient.Gender = ..CodeTable("Gender", $ZSTRIP(..g(tUserResponse,"sexo"), "*C"), $ZSTRIP(..g(tUserResponse,"sexo"), "*C"))
             Set tSDAPatient.Race = ..CodeTable("Race", $ZSTRIP(..g(tUserResponse,"etnia"), "*C"), $ZSTRIP(..g(tUserResponse,"etnia"), "*C"))
             Set tSDAPatient.BirthTime = $ZDT($ZDATEH(..g(tUserResponse,"dataNascimento"),4),3)_"T00:00:00"
             Do tSDAPatient.PatientNumbers.Insert(..PatientNumber(value.%Get("_id"),"MRN","","")) 
@@ -61,6 +61,11 @@ Method OnGetPatientData(pRequest As MarisaCare.Interop.Model.PatientRequest, pRe
     try{
         set tPatientId = pRequest.PatientId
         set tPatientCpf = pRequest.PatientCpf
+
+        // Adicionando formatação ao CPF
+        set tPatientCpf = $extract(pRequest.PatientCpf,1,3) _ "." _ $extract(pRequest.PatientCpf,4,6) _ "." _ $extract(pRequest.PatientCpf,7,9) _ "-" _ $extract(pRequest.PatientCpf,10,11)
+        $$$TRACE(tPatientCpf)
+
         set pResponse = ##class(MarisaCare.Interop.Model.PatientResponse).%New()
 
         If tPatientCpf'="" {
@@ -80,7 +85,7 @@ Method OnGetPatientData(pRequest As MarisaCare.Interop.Model.PatientRequest, pRe
             Set tSDAPatient = ##class(HS.SDA3.Patient).%New()
             Set tUserResponse = ..g(value,"userResponse")
             Set tPatientCpf = ..g(tUserResponse,"cpf")
-            Set tSDAPatient.Name = ..SplitName(..g(tUserResponse,"name"),.tSC)
+            Set tSDAPatient.Name = ..SplitName(..g(tUserResponse,"nome"),.tSC)
             $$$ThrowOnError(tSC)
             Set tSDAPatient.Gender = ..CodeTable("Gender", $ZSTRIP(..g(tUserResponse,"sexoBiologico"), "*C"), $ZSTRIP(..g(tUserResponse,"sexoBiologico"), "*C"))
             Set tSDAPatient.Race = ..CodeTable("Race", $ZSTRIP(..g(tUserResponse,"etnia"), "*C"), $ZSTRIP(..g(tUserResponse,"etnia"), "*C"))
@@ -153,16 +158,16 @@ Method OnGetPatientData(pRequest As MarisaCare.Interop.Model.PatientRequest, pRe
         }
         Set tFilter = {"patientCpf": (tPatientCpf)}
         //get Orders data
-        set ordersResultSet = ..Adapter.Query("test", "trackings", tFilter)
+        set ordersResultSet = ..Adapter.Query("test", "prescriptions", tFilter)
         While ..i(ordersResultSet,,.key,.value,.tCursor) {
-            set trackingsArray = value.%Get("trackings")
+            set trackingsArray = value.%Get("medicalRules")
             While ..i(trackingsArray,,.trackKey,.trackValue,.tTrackingsCursor) {
-                set prescriptionsArray = ..g(trackValue,"prescriptions")
+                set prescriptionsArray = ..g(trackValue,"intervencao")
                 While ..i(prescriptionsArray,,.prescriptionKey,.prescriptionValue,.tPrescriptionsCursor) {
                     Set tSDAOrder = ##class(HS.SDA3.OtherOrder).%New()
                     Set tSDAOrder.FromTime = ..g(trackValue,"dateOfPrescription")
                     Set tSDAOrder.ToTime = ..g(trackValue,"dateOfPrescription")
-                    Set tSDAOrder.Condition = ..g(trackValue,"disease")
+                    Set tSDAOrder.Condition = ..g(trackValue,"regraMedica")
                     Set tSDAOrder.OrderItem = ..CodeTable("Order",..g(prescriptionValue,"name"),..g(prescriptionValue,"name"),..CodingStandard)
                     Set tSDAOrder.Priority = ..CodeTable("Priority","intent","intent",..CodingStandard)
                     Set tSDAOrder.Status = "active"
