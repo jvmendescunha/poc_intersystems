@@ -32,6 +32,9 @@ jobs:
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_38eab7490488436686bfd29b73fb7282 }}/poc_intersystems-iris-1:${{ github.sha }}
         file: ./src-iris/Dockerfile
+        build-args: 
+          IRIS_IMAGE=${{ secrets.IRIS_IMAGE }}
+          IRIS_TAG=${{ secrets.IRIS_TAG }}
 
   deploy:
     runs-on: ubuntu-latest
