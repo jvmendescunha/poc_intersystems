@@ -33,8 +33,8 @@ jobs:
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_38eab7490488436686bfd29b73fb7282 }}/poc_intersystems-iris-1:${{ github.sha }}
         file: ./src-iris/Dockerfile
         build-args: 
-          IRIS_IMAGE="containers.intersystems.com/intersystems/irishealth-community"
-          IRIS_TAG="2024.3"
+          IRIS_IMAGE=containers.intersystems.com/intersystems/irishealth-community
+          IRIS_TAG=2024.3
 
   deploy:
     runs-on: ubuntu-latest
