@@ -2,6 +2,8 @@ ARG iris_image
 ARG iris_tag
 FROM ${iris_image}:${iris_tag}
 
+RUN mkdir -p /usr/local/irisbuild
+
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
 RUN pip install --no-warn-script-location --break-system-packages -r /opt/irisbuild/requirements_iris.txt
 
