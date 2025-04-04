@@ -34,6 +34,7 @@ jobs:
         file: ./src-iris/Dockerfile
         build-args: 
           IRIS_IMAGE=${{ secrets.IRIS_IMAGE }}
+          IRIS_IMAGE_TAG=${{ secrets.IRIS_IMAGE_TAG }}
           IRIS_TAG=${{ secrets.IRIS_TAG }}
 
   deploy:
