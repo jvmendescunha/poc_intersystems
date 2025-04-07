@@ -1,26 +1,27 @@
- zn "HSLIB"
- Do ##class(HS.Util.Installer.Foundation).Install("FHIRFacade")
- Set $namespace = "FHIRFacade"
- Do ##class(HS.FHIRServer.Installer).InstallNamespace()
- Set version="latest" s r=##class(%Net.HttpRequest).%New(),r.Server="pm.community.intersystems.com",r.SSLConfiguration="ISC.FeatureTracker.SSL.Config" d r.Get("/packages/zpm/"_version_"/installer"),$system.OBJ.LoadStream(r.HttpResponse.Data,"c")
- zpm "enable -community"
- zpm "install iris-apipub"
- zpm "install swagger-ui"
- set file = ##class(%File).%New("/opt/irisbuild/irispw.txt")
- write file.Open("R")
- set pwd = file.ReadLine()
- set file = ##class(%File).%New("/opt/irisbuild/mongodb.user")
- write file.Open("R")
- set mongostr = file.ReadLine()
- set mongousr = $Piece(mongostr,":",1)
- set mongopwd = $Piece(mongostr,":",2)
- write ##class(Ens.Config.Credentials).SetCredential("IRIS", "_SYSTEM", pwd)
- write ##class(Ens.Config.Credentials).SetCredential("mongodb", mongousr, mongopwd)
- do $System.OBJ.LoadDir("/opt/irisbuild/src/","cuk",,1)
- Set appKey = "/fhirserver/fhir/r4"
- Set strategyClass = "FHIRFacadeMC.InteractionsStrategy"
- Set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
- Do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages,,"FhirFacade",,,,"FhirFacade")
- do ##class(Ens.Director).SetAutoStart("FHIRFacadeMC.PROD.FoundationProduction",1)
- set ^EnsPortal.Settings("SuperUser","LastProduction") = "FHIRFacadeMC.PROD.FoundationProduction"
+zn "HSLIB"
+Do ##class(HS.Util.Installer.Foundation).Install("FHIRFacade")
+Set $namespace = "FHIRFacade"
+Do ##class(HS.FHIRServer.Installer).InstallNamespace()
+Set version="latest" s r=##class(%Net.HttpRequest).%New(),r.Server="pm.community.intersystems.com",r.SSLConfiguration="ISC.FeatureTracker.SSL.Config" d r.Get("/packages/zpm/"_version_"/installer"),$system.OBJ.LoadStream(r.HttpResponse.Data,"c")
+zpm "enable -community"
+zpm "install iris-apipub"
+zpm "install swagger-ui"
+set file = ##class(%File).%New("/opt/irisbuild/irispw.txt")
+write file.Open("R")
+set pwd = file.ReadLine()
+set file = ##class(%File).%New("/opt/irisbuild/mongodb.user")
+write file.Open("R")
+set mongostr = file.ReadLine()
+set mongousr = $Piece(mongostr,":",1)
+set mongopwd = $Piece(mongostr,":",2)
+write ##class(Ens.Config.Credentials).SetCredential("IRIS", "_SYSTEM", pwd)
+write ##class(Ens.Config.Credentials).SetCredential("mongodb", mongousr, mongopwd)
+do $System.OBJ.LoadDir("/opt/irisbuild/src/","cuk",,1)
+Set appKey = "/fhirserver/fhir/r4"
+Set strategyClass = "FHIRFacadeMC.InteractionsStrategy"
+Set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
+Do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages,,"FhirFacade",,,,"FhirFacade")
+do ##class(Ens.Director).SetAutoStart("FHIRFacadeMC.PROD.FoundationProduction",1)
+set ^EnsPortal.Settings("SuperUser","LastProduction") = "FHIRFacadeMC.PROD.FoundationProduction"
+
  
