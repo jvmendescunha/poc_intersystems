@@ -3,7 +3,7 @@ ARG IRIS_TAG=2024.1
 FROM ${IRIS_IMAGE}:${IRIS_TAG}
 
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
-RUN pip install --no-warn-script-location --break-system-packages -r /opt/irisbuild/requirements_iris.txt
+RUN pip install --no-warn-script-location -r /opt/irisbuild/requirements_iris.txt
 
 RUN iris start IRIS \
     && iris session IRIS < /opt/irisbuild/iris.script \
