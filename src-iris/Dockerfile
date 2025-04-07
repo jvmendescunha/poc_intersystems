@@ -25,14 +25,14 @@ RUN iris start IRIS \
     && iris session IRIS < /usr/local/irisbuild/iris.script \
     && iris stop IRIS quietly
 
-# Copiando o arquivo de senha irispw para o container
-COPY irispw.txt /run/secrets/iris_pw  # O arquivo irispw.txt está na mesma pasta que o Dockerfile
+# Copiando o arquivo de senha irispw.txt para o caminho desejado dentro do container
+COPY irispw.txt /tmp/iris_pw  # Copiar diretamente para /tmp/iris_pw no container
 
 # Garantindo permissões adequadas para o arquivo de senha
-RUN chmod 600 /run/secrets/iris_pw
+RUN chmod 600 /tmp/iris_pw
 
 # Executando o script de mudança de senha
-RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
+RUN /usr/irissys/dev/Container/changePassword.sh /tmp/iris_pw
 
 # Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
