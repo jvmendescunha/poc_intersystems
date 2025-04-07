@@ -1,7 +1,6 @@
 # Definindo variáveis de build para imagem base e tag
 ARG iris_image
 ARG iris_tag
-ARG IRIS_PASSWORD
 
 # Usando a imagem base fornecida pelas variáveis iris_image e iris_tag
 FROM ${iris_image}:${iris_tag}
@@ -26,17 +25,14 @@ RUN iris start IRIS \
     && iris session IRIS < /usr/local/irisbuild/iris.script \
     && iris stop IRIS quietly
 
-# Copiando o arquivo de senha irispw para um diretório permitido dentro do container (ex: /tmp)
-RUN echo "${IRIS_PASSWORD}" > /tmp/iris_pw
+# Copiando o arquivo de senha irispw para o container
+COPY ./src-iris/irispw /run/secrets/iris_pw  # Montando o arquivo de senha diretamente
 
 # Garantindo permissões adequadas para o arquivo de senha
-RUN chmod 600 /tmp/iris_pw
-
-# Verificando o conteúdo do arquivo de senha antes de passá-lo para o script
-RUN cat /tmp/iris_pw
+RUN chmod 600 /run/secrets/iris_pw
 
 # Executando o script de mudança de senha
-RUN /usr/irissys/dev/Container/changePassword.sh /tmp/iris_pw
+RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
 
 # Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
