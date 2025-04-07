@@ -42,6 +42,7 @@ jobs:
           iris_tag=2024.3
           IRIS_PASSWORD=${{ secrets.IRIS_PASSWORD }}
           MONGO_CREDENTIALS=${{ secrets.MONGO_CREDENTIALS }}
+          MONGO_URI=${{ secrets.DB_CONECTION_STRING }}
 
   deploy:
     runs-on: ubuntu-latest
