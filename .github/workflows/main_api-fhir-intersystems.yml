@@ -39,6 +39,7 @@ jobs:
         build-args: |
           iris_image=containers.intersystems.com/intersystems/irishealth-community
           iris_tag=2024.3
+          IRIS_PASSWORD=${{ secrets.IRIS_PASSWORD }}
 
   deploy:
     runs-on: ubuntu-latest
