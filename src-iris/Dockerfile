@@ -14,7 +14,7 @@ RUN mkdir -p /usr/local/irisbuild && chown -R ${ISC_PACKAGE_MGRUSER}:${ISC_PACKA
 # Voltando para o usuário padrão
 USER ${ISC_PACKAGE_MGRUSER}
 
-# Copiando os arquivos da pasta src-iris para /usr/local/irisbuild
+# Copiando todos os arquivos da pasta atual para o diretório de destino no container
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" ./ /usr/local/irisbuild
 
 # Instalando pacotes Python necessários
@@ -26,7 +26,7 @@ RUN iris start IRIS \
     && iris stop IRIS quietly
 
 # Copiando o arquivo de senha irispw para o container
-COPY irispw.txt /run/secrets/iris_pw
+COPY irispw.txt /run/secrets/iris_pw  # O arquivo irispw.txt está na mesma pasta que o Dockerfile
 
 # Garantindo permissões adequadas para o arquivo de senha
 RUN chmod 600 /run/secrets/iris_pw
@@ -36,3 +36,4 @@ RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
 
 # Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
+
