@@ -1,27 +1,39 @@
+# Definindo variáveis de build para imagem base e tag
 ARG iris_image
 ARG iris_tag
-ARG IRIS_PASSWORD  # Recebendo o build-arg com a senha
+ARG IRIS_PASSWORD
 
+# Usando a imagem base fornecida pelas variáveis iris_image e iris_tag
 FROM ${iris_image}:${iris_tag}
 
+# Tornando-se root para criar o diretório
 USER root
 
+# Criando o diretório /usr/local/irisbuild (caso não exista) e garantindo permissões adequadas
 RUN mkdir -p /usr/local/irisbuild && chown -R ${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP} /usr/local/irisbuild
 
+# Voltando para o usuário padrão
 USER ${ISC_PACKAGE_MGRUSER}
 
+# Copiando os arquivos da pasta src-iris para /usr/local/irisbuild
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" ./src-iris /usr/local/irisbuild
 
+# Instalando pacotes Python necessários
 RUN pip install --no-warn-script-location --break-system-packages -r /usr/local/irisbuild/requirements_iris.txt
 
+# Iniciando o IRIS, executando um script e depois parando o IRIS
 RUN iris start IRIS \
     && iris session IRIS < /usr/local/irisbuild/iris.script \
     && iris stop IRIS quietly
 
-RUN echo "${IRIS_PASSWORD}" > /run/secrets/iris_pw  # Colocando o conteúdo do build-arg IRIS_PASSWORD no arquivo
+# Copiando o arquivo de senha irispw para um diretório permitido dentro do container (ex: /tmp)
+RUN echo "${IRIS_PASSWORD}" > /tmp/iris_pw
 
-RUN chmod 600 /run/secrets/iris_pw
+# Garantindo permissões adequadas para o arquivo de senha
+RUN chmod 600 /tmp/iris_pw
 
-RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
+# Executando o script de mudança de senha
+RUN /usr/irissys/dev/Container/changePassword.sh /tmp/iris_pw
 
+# Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
