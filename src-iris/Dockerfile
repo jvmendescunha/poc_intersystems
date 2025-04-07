@@ -1,5 +1,5 @@
-ARG IRIS_IMAGE
-ARG IRIS_TAG
+ARG IRIS_IMAGE=containers.intersystems.com/intersystems/irishealth-community
+ARG IRIS_TAG=2023.2
 FROM ${IRIS_IMAGE}:${IRIS_TAG}
 
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
