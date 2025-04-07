@@ -6,7 +6,7 @@ FROM ${IRIS_IMAGE}:${IRIS_TAG}
 ARG IRIS_PASSWORD
 ARG MONGO_CREDENTIALS
 
-COPY --chown=irisowner:iris /opt/irisbuild
+COPY --chown=irisowner:iris . /opt/irisbuild
 
 # Instala a dependência do requirements
 RUN pip install --no-warn-script-location -r /opt/irisbuild/requirements_iris.txt
