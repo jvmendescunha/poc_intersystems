@@ -1,6 +1,6 @@
 ARG IRIS_IMAGE=containers.intersystems.com/intersystems/irishealth-community
 ARG IRIS_TAG=2023.2
-FROM ${IRIS_IMAGE}:${IRIS_TAG}
+FROM intersystemsdc/irishealth-community:2023.2
 
 COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
 RUN pip install --no-warn-script-location --break-system-packages -r /opt/irisbuild/requirements_iris.txt
