@@ -25,5 +25,4 @@ services:
     - ./volumes/webgateway:/webgateway-shared
 
 secrets:
-  iris_pw:
-    file: "./src-iris/irispw.txt"
+  iris_pw: ${{ secrets.IRIS_PASSWORD }}
