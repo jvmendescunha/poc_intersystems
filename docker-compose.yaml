@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   iris:
     build:
@@ -7,25 +5,25 @@ services:
       args:
         IRIS_IMAGE: "${IRIS_IMAGE}"
         IRIS_TAG: "${IRIS_IMAGE_TAG}"
+      secrets:
+        - iris_pw
     volumes:
-      - ./volumes/iris:/iris-shared
-      - ./src-iris/irispw.txt:/run/secrets/iris_pw  # Montando o arquivo de senha diretamente no container
-    environment:
-      - IRIS_PASSWORD=${IRIS_PASSWORD}  # Se necessário, passe a senha também como variável de ambiente
+    - ./volumes/iris:/iris-shared
     # command:
     # - "${LICENSE_KEY_FILE:+--key /iris-shared/${LICENSE_KEY_FILE}}"
 
   webgateway:
     image: ${WG_IMAGE}:${WG_IMAGE_TAG}
+    secrets:
+      - iris_pw
     ports:
-      - "${WEBSERVER_PORT}:80"
+    - "${WEBSERVER_PORT}:80"
     environment:
-      - ISC_CSP_CONF_FILE=/webgateway-shared/CSP.conf
-      - ISC_CSP_INI_FILE=/webgateway-shared/CSP.ini
+    - ISC_CSP_CONF_FILE=/webgateway-shared/CSP.conf
+    - ISC_CSP_INI_FILE=/webgateway-shared/CSP.ini
     volumes:
-      - ./volumes/webgateway:/webgateway-shared
-      - ./src-iris/irispw.txt:/run/secrets/iris_pw  # Montando o arquivo de senha para o webgateway também
+    - ./volumes/webgateway:/webgateway-shared
 
 secrets:
   iris_pw:
-    external: true  # Use isso apenas se estiver usando Docker Swarm e Secrets nativos
+    file: "./src-iris/irispw.txt"
