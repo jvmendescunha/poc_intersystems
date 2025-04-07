@@ -32,6 +32,9 @@ RUN echo "${IRIS_PASSWORD}" > /tmp/iris_pw
 # Garantindo permissões adequadas para o arquivo de senha
 RUN chmod 600 /tmp/iris_pw
 
+# Verificando o conteúdo do arquivo de senha antes de passá-lo para o script
+RUN cat /tmp/iris_pw
+
 # Executando o script de mudança de senha
 RUN /usr/irissys/dev/Container/changePassword.sh /tmp/iris_pw
 
