@@ -26,13 +26,13 @@ RUN iris start IRIS \
     && iris stop IRIS quietly
 
 # Copiando o arquivo de senha irispw para o container
-COPY ./src-iris/irispw /run/secrets/iris_pw  # Montando o arquivo de senha diretamente
+COPY ./src-iris/irispw.txt /run/secrets/iris_pw.txt  # Montando o arquivo de senha diretamente
 
 # Garantindo permissões adequadas para o arquivo de senha
-RUN chmod 600 /run/secrets/iris_pw
+RUN chmod 600 /run/secrets/iris_pw.txt
 
 # Executando o script de mudança de senha
-RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
+RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw.txt
 
 # Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
