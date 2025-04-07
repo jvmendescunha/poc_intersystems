@@ -15,7 +15,7 @@ RUN mkdir -p /usr/local/irisbuild && chown -R ${ISC_PACKAGE_MGRUSER}:${ISC_PACKA
 USER ${ISC_PACKAGE_MGRUSER}
 
 # Copiando os arquivos da pasta src-iris para /usr/local/irisbuild
-COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" ./src-iris /usr/local/irisbuild
+COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" ./ /usr/local/irisbuild
 
 # Instalando pacotes Python necessários
 RUN pip install --no-warn-script-location --break-system-packages -r /usr/local/irisbuild/requirements_iris.txt
@@ -26,13 +26,13 @@ RUN iris start IRIS \
     && iris stop IRIS quietly
 
 # Copiando o arquivo de senha irispw para o container
-COPY ./src-iris/irispw.txt /run/secrets/iris_pw.txt  # Montando o arquivo de senha diretamente
+COPY irispw.txt /run/secrets/iris_pw
 
 # Garantindo permissões adequadas para o arquivo de senha
-RUN chmod 600 /run/secrets/iris_pw.txt
+RUN chmod 600 /run/secrets/iris_pw
 
 # Executando o script de mudança de senha
-RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw.txt
+RUN /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
 
 # Limpando arquivos temporários
 RUN rm -r /usr/local/irisbuild/*
