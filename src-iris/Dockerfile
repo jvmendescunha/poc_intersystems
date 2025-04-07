@@ -5,20 +5,20 @@ FROM ${IRIS_IMAGE}:${IRIS_TAG}
 
 ARG IRIS_PASSWORD
 ARG MONGO_CREDENTIALS
+ARG MONGO_URI
+
+ENV MONGO_URI=${MONGO_URI}
 
 COPY --chown=irisowner:iris . /opt/irisbuild
 
-# Instala a dependência do requirements
 RUN pip install --no-warn-script-location -r /opt/irisbuild/requirements_iris.txt
 
-# Substitui os placeholders nos arquivos de credenciais
 RUN sed -i "s|##IRIS_PASSWORD##|${IRIS_PASSWORD}|" /opt/irisbuild/irispw.txt && \
-    sed -i "s|##MONGO_CREDENTIALS##|${MONGO_CREDENTIALS}|" /opt/irisbuild/mongodb.user
+    sed -i "s|##MONGO_CREDENTIALS##|${MONGO_CREDENTIALS}|" /opt/irisbuild/mongodb.user && \
+    echo "${MONGO_URI}" > /opt/irisbuild/mongodb.uri
 
-# Executa o script para instalação/configuração
 RUN iris start IRIS && \
     iris session IRIS < /opt/irisbuild/iris.script && \
     iris stop IRIS quietly
 
 RUN rm -r /opt/irisbuild/*
-
