@@ -1,17 +1,24 @@
 ARG IRIS_IMAGE=containers.intersystems.com/intersystems/irishealth-community
 ARG IRIS_TAG=2024.1
+
 FROM ${IRIS_IMAGE}:${IRIS_TAG}
 
-COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
+ARG IRIS_PASSWORD
+ARG MONGO_CREDENTIALS
+
+COPY . /opt/irisbuild
+
+# Instala a dependência do requirements
 RUN pip install --no-warn-script-location -r /opt/irisbuild/requirements_iris.txt
 
-RUN iris start IRIS \
-    && iris session IRIS < /opt/irisbuild/iris.script \
-    && iris stop IRIS quietly
+# Substitui os placeholders nos arquivos de credenciais
+RUN sed -i "s|##IRIS_PASSWORD##|${IRIS_PASSWORD}|" /opt/irisbuild/irispw.txt && \
+    sed -i "s|##MONGO_CREDENTIALS##|${MONGO_CREDENTIALS}|" /opt/irisbuild/mongodb.user
 
-ARG IRIS_PASSWORD
-RUN echo "$IRIS_PASSWORD" > /tmp/password.txt && \
-    /usr/irissys/dev/Container/changePassword.sh /tmp/password.txt && \
-    rm /tmp/password.txt
-    
+# Executa o script para instalação/configuração
+RUN iris start IRIS && \
+    iris session IRIS < /opt/irisbuild/iris.script && \
+    iris stop IRIS quietly
+
 RUN rm -r /opt/irisbuild/*
+
