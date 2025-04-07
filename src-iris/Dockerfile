@@ -19,7 +19,7 @@ RUN sed -i "s|##IRIS_PASSWORD##|${IRIS_PASSWORD}|" /opt/irisbuild/irispw.txt && 
 
 RUN echo "Running iris.script..." && \
     iris start IRIS && \
-    iris session IRIS -U %SYS "set status=##class(%SYSTEM.OBJ).Load('/opt/irisbuild/iris.script','ck') quit:'$$$ISERR(status) 1 write 'ERROR:', $system.OBJ.DisplayError(status),!' " && \
+    iris session IRIS < /opt/irisbuild/iris.script && \
     iris stop IRIS quietly && \
     echo "FHIR instalado com sucesso"
 
