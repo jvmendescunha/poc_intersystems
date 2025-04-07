@@ -6,20 +6,50 @@ Set version="latest" s r=##class(%Net.HttpRequest).%New(),r.Server="pm.community
 zpm "enable -community"
 zpm "install iris-apipub"
 zpm "install swagger-ui"
+
+; Log leitura de senha
 set file = ##class(%File).%New("/opt/irisbuild/irispw.txt")
-write file.Open("R")
-set pwd = file.ReadLine()
+write "Opening irispw.txt...", !
+if file.Open("R") { set pwd = file.ReadLine() } else { write "FAILED to open irispw.txt", ! quit }
+
+; Log leitura de usuário do Mongo
 set file = ##class(%File).%New("/opt/irisbuild/mongodb.user")
-write file.Open("R")
-set mongostr = file.ReadLine()
-set mongousr = $Piece(mongostr,":",1)
-set mongopwd = $Piece(mongostr,":",2)
+write "Opening mongodb.user...", !
+if file.Open("R") {
+  set mongostr = file.ReadLine()
+  set mongousr = $Piece(mongostr,":",1)
+  set mongopwd = $Piece(mongostr,":",2)
+} else {
+  write "FAILED to open mongodb.user", ! quit
+}
+
+write "Setting IRIS Credentials...", !
 write ##class(Ens.Config.Credentials).SetCredential("IRIS", "_SYSTEM", pwd)
+write "Setting MongoDB Credentials...", !
 write ##class(Ens.Config.Credentials).SetCredential("mongodb", mongousr, mongopwd)
+
+; Carrega código da pasta src
 do $System.OBJ.LoadDir("/opt/irisbuild/src/","cuk",,1)
+
+; Instala o FHIR
 Set appKey = "/fhirserver/fhir/r4"
 Set strategyClass = "FHIRFacadeMC.InteractionsStrategy"
 Set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
-Do ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages,,"FhirFacade",,,,"FhirFacade")
+write "Installing FHIR instance...", !
+Set status = ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages,,"FhirFacade",,,,"FhirFacade")
+if $$$ISERR(status) {
+  write "INSTALL FHIR FAILED: ", $system.OBJ.DisplayError(status), !
+} else {
+  write "FHIR InstallInstance SUCCESS", !
+}
+
+; Inicia a production
+write "Starting Production...", !
 do ##class(Ens.Director).SetAutoStart("FHIRFacadeMC.PROD.FoundationProduction",1)
 set ^EnsPortal.Settings("SuperUser","LastProduction") = "FHIRFacadeMC.PROD.FoundationProduction"
+
+; Marca finalização OK
+set file = ##class(%File).%New("/opt/irisbuild/fhir.ok")
+do file.Create()
+do file.WriteLine("done")
+do file.Close()
