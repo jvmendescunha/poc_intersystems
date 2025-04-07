@@ -17,8 +17,9 @@ RUN sed -i "s|##IRIS_PASSWORD##|${IRIS_PASSWORD}|" /opt/irisbuild/irispw.txt && 
     sed -i "s|##MONGO_CREDENTIALS##|${MONGO_CREDENTIALS}|" /opt/irisbuild/mongodb.user && \
     echo "${MONGO_URI}" > /opt/irisbuild/mongodb.uri
 
-RUN iris start IRIS && \
-    iris session IRIS < /opt/irisbuild/iris.script && \
+RUN echo "Running iris.script..." && \
+    iris start IRIS && \
+    iris session IRIS -U %SYS "do ##class(%SYSTEM.OBJ).Load('/opt/irisbuild/iris.script','ck')" && \
     iris stop IRIS quietly
 
 RUN rm -r /opt/irisbuild/*
