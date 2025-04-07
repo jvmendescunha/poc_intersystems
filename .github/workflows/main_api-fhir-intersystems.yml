@@ -25,7 +25,10 @@ jobs:
         registry: https://index.docker.io/v1/
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-
+        
+    - name: Login to InterSystems Container Registry
+      run: echo "${{ secrets.INTER_DOCKER_PASSWORD }}" | docker login containers.intersystems.com -u "${{ secrets.INTER_DOCKER_USERNAME }}" --password-stdin
+      
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
