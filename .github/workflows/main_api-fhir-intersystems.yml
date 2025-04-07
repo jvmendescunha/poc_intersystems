@@ -32,9 +32,10 @@ jobs:
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
+        context: ./src-iris    
+        file: ./src-iris/Dockerfile
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_38eab7490488436686bfd29b73fb7282 }}/poc_intersystems-iris-1:${{ github.sha }}
-        file: ./src-iris/Dockerfile
         build-args: |
           iris_image=containers.intersystems.com/intersystems/irishealth-community
           iris_tag=2024.3
