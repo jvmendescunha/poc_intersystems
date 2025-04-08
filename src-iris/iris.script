@@ -7,78 +7,45 @@ zpm "enable -community"
 zpm "install iris-apipub"
 zpm "install swagger-ui"
 
-; Log leitura de senha
 set file = ##class(%File).%New("/opt/irisbuild/irispw.txt")
-write "Opening irispw.txt...", !
-if file.Open("R") { set pwd = file.ReadLine() } else { write "FAILED to open irispw.txt", ! quit }
+do file.Open("R")
+set pwd = file.ReadLine()
 
-; Log leitura de usuário do Mongo
 set file = ##class(%File).%New("/opt/irisbuild/mongodb.user")
-write "Opening mongodb.user...", !
-if file.Open("R") {
-  set mongostr = file.ReadLine()
-  set mongousr = $Piece(mongostr,":",1)
-  set mongopwd = $Piece(mongostr,":",2)
-} else {
-  write "FAILED to open mongodb.user", ! quit
-}
+do file.Open("R")
+set mongostr = file.ReadLine()
+set mongousr = $Piece(mongostr,":",1)
+set mongopwd = $Piece(mongostr,":",2)
 
-write "Setting IRIS Credentials...", !
 write ##class(Ens.Config.Credentials).SetCredential("IRIS", "_SYSTEM", pwd)
-write "Setting MongoDB Credentials...", !
 write ##class(Ens.Config.Credentials).SetCredential("mongodb", mongousr, mongopwd)
 
-; Carrega código da pasta src
 do $System.OBJ.LoadDir("/opt/irisbuild/src/","cuk",,1)
 
-; Instala o FHIR
 Set appKey = "/fhirserver/fhir/r4"
 Set strategyClass = "FHIRFacadeMC.InteractionsStrategy"
 Set metadataPackages = $lb("hl7.fhir.r4.core@4.0.1")
 write "Installing FHIR instance...", !
 Set status = ##class(HS.FHIRServer.Installer).InstallInstance(appKey, strategyClass, metadataPackages,,"FhirFacade",,,,"FhirFacade")
-if $$$ISERR(status) {
-  write "INSTALL FHIR FAILED: ", $system.OBJ.DisplayError(status), !
-} else {
-  write "FHIR InstallInstance SUCCESS", !
+If $$$ISERR(status) {
+    write "INSTALL FHIR FAILED: ", $System.Status.GetErrorText(status), !
+} Else {
+    write "FHIR InstallInstance SUCCESS", !
 }
 
-; Criar Web App e configurar CSP Gateway para escutar na porta 8082
-zn "%SYS"
-write "Configurando Web Gateway para escutar na porta 8082...", !
-
-set configName = "Default"
-set port = 8082
-
-set result = ##class(Security.Applications).Create("/fhirserver/fhir/r4", {
-  "Name": "/fhirserver/fhir/r4",
-  "Namespace": "FHIRFACADE",
-  "Enabled": 1,
-  "DispatchClass": "HS.FHIRServer.Dispatch",
-  "IsNamespaceDefault": 0
-})
-write "Web App criado: ", result, !
-
-; Cria um CSP Gateway Listener na porta 8082
-set httpConfig = ##class(%SYS.HTTP.Server).%New()
-set httpConfig.Name = "FHIR-8082"
-set httpConfig.Port = port
-set httpConfig.ConfigName = configName
-set status = httpConfig.%Save()
-if $$$ISERR(status) {
-  write "Erro ao criar listener: ", $System.Status.GetErrorText(status), !
-} else {
-  write "Listener HTTP criado na porta ", port, !
-}
-
-
-; Inicia a production
-write "Starting Production...", !
 do ##class(Ens.Director).SetAutoStart("FHIRFacadeMC.PROD.FoundationProduction",1)
 set ^EnsPortal.Settings("SuperUser","LastProduction") = "FHIRFacadeMC.PROD.FoundationProduction"
 
-; Marca finalização OK
-set file = ##class(%File).%New("/opt/irisbuild/fhir.ok")
-do file.Create()
-do file.WriteLine("done")
-do file.Close()
+zn "%SYS"
+write "Criando Web Application...", !
+Set status = ##class(Security.Applications).Create("/fhirserver/fhir/r4")
+If $$$ISERR(status) {
+    Write "Erro ao criar aplicação: ", $System.Status.GetErrorText(status), !
+} Else {
+    Do ##class(Security.Applications).Modify("/fhirserver/fhir/r4", {
+        "Enabled": 1,
+        "DispatchClass": "HS.FHIRServer.Dispatch",
+        "Namespace": "FHIRFACADE"
+    })
+    Write "Web Application configurada com sucesso!", !
+}
