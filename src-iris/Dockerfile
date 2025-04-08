@@ -1,13 +1,30 @@
-ARG IRIS_IMAGE
-ARG IRIS_TAG
+ARG IRIS_IMAGE=containers.intersystems.com/intersystems/irishealth-community
+ARG IRIS_TAG=2024.1
+
 FROM ${IRIS_IMAGE}:${IRIS_TAG}
 
-COPY --chown="${ISC_PACKAGE_MGRUSER}:${ISC_PACKAGE_IRISGROUP}" . /opt/irisbuild
-RUN pip install --no-warn-script-location --break-system-packages -r /opt/irisbuild/requirements_iris.txt
+ARG IRIS_PASSWORD
+ARG MONGO_CREDENTIALS
+ARG MONGO_URI
 
-RUN iris start IRIS \
-    && iris session IRIS < /opt/irisbuild/iris.script \
-    && iris stop IRIS quietly
+ENV MONGO_URI=${MONGO_URI}
 
-RUN --mount=type=secret,id=iris_pw,mode=0444 /usr/irissys/dev/Container/changePassword.sh /run/secrets/iris_pw
+COPY --chown=irisowner:iris . /opt/irisbuild
+COPY CSP.ini /usr/irissys/mgr/CSP.ini
+
+EXPOSE 80
+
+RUN pip install --no-warn-script-location -r /opt/irisbuild/requirements_iris.txt
+
+RUN sed -i "s|##IRIS_PASSWORD##|${IRIS_PASSWORD}|" /opt/irisbuild/irispw.txt && \
+    sed -i "s|##MONGO_CREDENTIALS##|${MONGO_CREDENTIALS}|" /opt/irisbuild/mongodb.user && \
+    echo "${MONGO_URI}" > /opt/irisbuild/mongodb.uri
+
+RUN echo "Executando iris.script..." && \
+    iris start IRIS && \
+    iris session IRIS < /opt/irisbuild/iris.script && \
+    iris stop IRIS quietly && \
+    echo "FHIR instalado com sucesso na porta 80"
+
 RUN rm -r /opt/irisbuild/*
+

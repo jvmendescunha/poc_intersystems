@@ -25,16 +25,21 @@ jobs:
         registry: https://index.docker.io/v1/
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-
+        
+    - name: Login to InterSystems Container Registry
+      run: echo "${{ secrets.INTER_DOCKER_PASSWORD }}" | docker login containers.intersystems.com -u "${{ secrets.INTER_DOCKER_USERNAME }}" --password-stdin
+      
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
+        context: ./src-iris    
+        file: ./src-iris/Dockerfile
         push: true
         tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_38eab7490488436686bfd29b73fb7282 }}/poc_intersystems-iris-1:${{ github.sha }}
-        file: ./src-iris/Dockerfile
         build-args: |
           iris_image=containers.intersystems.com/intersystems/irishealth-community
           iris_tag=2024.3
+          IRIS_PASSWORD=${{ secrets.IRIS_PASSWORD }}
 
   deploy:
     runs-on: ubuntu-latest
