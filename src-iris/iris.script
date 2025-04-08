@@ -43,6 +43,35 @@ if $$$ISERR(status) {
   write "FHIR InstallInstance SUCCESS", !
 }
 
+; Criar Web App e configurar CSP Gateway para escutar na porta 8082
+zn "%SYS"
+write "Configurando Web Gateway para escutar na porta 8082...", !
+
+set configName = "Default"
+set port = 8082
+
+set result = ##class(Security.Applications).Create("/fhirserver/fhir/r4", {
+  "Name": "/fhirserver/fhir/r4",
+  "Namespace": "FHIRFACADE",
+  "Enabled": 1,
+  "DispatchClass": "HS.FHIRServer.Dispatch",
+  "IsNamespaceDefault": 0
+})
+write "Web App criado: ", result, !
+
+; Cria um CSP Gateway Listener na porta 8082
+set httpConfig = ##class(%SYS.HTTP.Server).%New()
+set httpConfig.Name = "FHIR-8082"
+set httpConfig.Port = port
+set httpConfig.ConfigName = configName
+set status = httpConfig.%Save()
+if $$$ISERR(status) {
+  write "Erro ao criar listener: ", $System.Status.GetErrorText(status), !
+} else {
+  write "Listener HTTP criado na porta ", port, !
+}
+
+
 ; Inicia a production
 write "Starting Production...", !
 do ##class(Ens.Director).SetAutoStart("FHIRFacadeMC.PROD.FoundationProduction",1)
