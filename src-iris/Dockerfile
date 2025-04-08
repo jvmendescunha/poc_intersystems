@@ -23,4 +23,6 @@ RUN echo "Running iris.script..." && \
     iris stop IRIS quietly && \
     echo "FHIR instalado com sucesso"
 
+EXPOSE 8082
+
 RUN rm -r /opt/irisbuild/*
